@@ -1,0 +1,233 @@
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+  SafeAreaView,
+} from 'react-native';
+
+export default function App() {
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [gameResults, setGameResults] = useState([]);
+  const [showScoreboard, setShowScoreboard] = useState(false);
+
+  const wordSets = [
+    { options: ["Dog", "Cat", "Parrot", "Car"], oddOne: "Car" },
+    { options: ["Milk", "Juice", "Water", "Laptop"], oddOne: "Laptop" },
+    { options: ["Car", "Bike", "Bus", "Giraffe"], oddOne: "Giraffe" },
+    { options: ["Sun", "Moon", "Star", "Boat"], oddOne: "Boat" },
+    { options: ["Blue", "Red", "Green", "Table"], oddOne: "Table" }
+  ];
+
+  const resetGame = () => {
+    setCurrentRound(0);
+    setScore(0);
+  };
+
+  const handleAnswer = (selectedOption) => {
+    const isCorrect = selectedOption === wordSets[currentRound].oddOne;
+    
+    if (isCorrect) {
+      setScore(score + 1);
+      Alert.alert("Correct!", "That was the odd one out!");
+    } else {
+      Alert.alert("Wrong!", The odd one was: ${wordSets[currentRound].oddOne});
+    }
+
+    // Move to next round or end game
+    if (currentRound === 4) {
+      // Game Over
+      const finalScore = score;
+      const newResult = { score: finalScore, id: Date.now() };
+      setGameResults([...gameResults, newResult]);
+      
+      Alert.alert(
+        "Game Over!",
+        You got ${finalScore} out of 5 correct!,
+        [
+          {
+            text: "Play Again",
+            onPress: resetGame,
+          },
+          {
+            text: "View Scoreboard",
+            onPress: () => setShowScoreboard(true),
+          },
+        ]
+      );
+    } else {
+      setCurrentRound(currentRound + 1);
+    }
+  };
+
+  if (showScoreboard) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>Scoreboard</Text>
+        <FlatList
+          data={gameResults}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View
+              style={[styles.scoreItem, item.score === 5 && styles.perfectScore]}
+            >
+              <Text style={styles.scoreText}>
+                Score: {item.score}/5
+              </Text>
+            </View>
+          )}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowScoreboard(false)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.buttonText}>Back to Game</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Odd One Out</Text>
+      <Text style={styles.studentInfo}>Student Name and ID</Text>
+      
+      <View style={styles.progressContainer}>
+        <View 
+          style={[styles.progressBar, { width: ${(currentRound) * 20}% }]} 
+        />
+        <Text style={styles.progressText}>
+          Round {currentRound + 1}/5
+        </Text>
+      </View>
+
+      <View style={styles.gameContainer}>
+        <Text style={styles.instruction}>Find the odd one out:</Text>
+        <View style={styles.optionsContainer}>
+          {wordSets[currentRound].options.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.optionButton}
+              onPress={() => handleAnswer(option)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={styles.scoreboardButton}
+        onPress={() => setShowScoreboard(true)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.buttonText}>View Scoreboard</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  studentInfo: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666',
+  },
+  progressContainer: {
+    height: 20,
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    marginBottom: 30,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+  },
+  progressText: {
+    position: 'absolute',
+    width: '100%',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  gameContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  instruction: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    padding: 10,
+  },
+  optionButton: {
+    width: '45%',
+    padding: 20,
+    margin: 5,
+    backgroundColor: '#2196F3',
+    borderRadius: 8,
+    elevation: 3,
+  },
+  optionText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  scoreboardButton: {
+    backgroundColor: '#FF9800',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: '#2196F3',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  scoreItem: {
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    marginVertical: 5,
+    borderRadius: 8,
+  },
+  perfectScore: {
+    backgroundColor: '#C8E6C9',
+  },
+  scoreText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+});
